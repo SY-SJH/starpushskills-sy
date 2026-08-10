@@ -16,6 +16,18 @@
 
 当前浏览器会话的账号以页面上显示的账号头像、昵称或工作台身份为准。多人共用 skill 时，每个人应在自己的浏览器用户配置中登录自己的账号；skill 不读取 Cookie、localStorage、密码、验证码或浏览器 profile，也不把登录态导出到仓库。
 
+## 飞书 OpenClaw 的连接边界
+
+飞书只是消息入口，真正能操作浏览器的是 OpenClaw Gateway/浏览器节点。必须先确认 Gateway 和 Chrome 的部署关系：
+
+- **同一台电脑**：扩展设置里的默认端口 `18792` 才可能有效；在这台电脑运行 `openclaw browser extension pair`，把命令输出的配对字符串粘贴到扩展工具栏弹窗中，再选择 `All tabs` 或 `Selected tabs`。
+- **Gateway 在远程服务器**：不要把远程 Gateway 的地址或飞书机器人 token 填进 `127.0.0.1` 配置。由 Gateway 所在机器生成配对字符串：`openclaw browser extension pair --gateway-url wss://你的-gateway-域名`，再在本机 Chrome 扩展中完成配对；远程 Gateway 必须实际开放 `/browser/extension` 路径。
+- **浏览器节点模式**：本机运行 OpenClaw browser node，由 Gateway 通过已认证的节点连接代理浏览器操作；这不是把 Chrome Cookie 上传到飞书。
+
+截图里的 `Gateway token` 是 OpenClaw Gateway 的认证配置（`gateway.auth.token` 或 `OPENCLAW_GATEWAY_TOKEN`），不是飞书 token、StarPush 账号密码、小云雀手机号或短信验证码。若没有明确拿到本机 Gateway 的配置，不要猜 token，也不要把 token 发到聊天中。
+
+配对成功的判断不是看设置页能否打开，而是扩展不再显示红色连接错误，并且 OpenClaw 的 Chrome profile 能列出带真实 URL 的普通网页标签，例如 `https://xyq.jianying.com/home`。如果 OpenClaw 运行在飞书云端且没有本机浏览器节点或远程扩展 relay，skill 无法直接操作用户本机 Chrome。
+
 ## 无浏览器时的后备模式
 
 只有用户明确要求使用独立命令行流程时，才使用：
