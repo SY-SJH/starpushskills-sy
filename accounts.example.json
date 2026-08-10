@@ -1,0 +1,119 @@
+{
+  "name": "zhangsan",
+  "platforms": {
+    "xiaohongshu": {
+      "username": "replace-me",
+      "password": "replace-me",
+      "auth_mode": "password",
+      "login_url": "https://example.com/login",
+      "publish_url": "https://example.com/publish",
+      "storage_state": "./sessions/xiaohongshu.json",
+      "selectors": {
+        "username": "input[name='username']",
+        "password": "input[name='password']",
+        "login_button": "button[type='submit']",
+        "title": "input[name='title']",
+        "body": "textarea[name='content']",
+        "tags": "input[name='tags']",
+        "publish_button": "button:has-text('发布')"
+      }
+    },
+    "zhihu": {
+      "username": "replace-me",
+      "password": "replace-me",
+      "auth_mode": "password",
+      "login_url": "https://example.com/login",
+      "publish_url": "https://example.com/publish",
+      "storage_state": "./sessions/zhihu.json",
+      "selectors": {
+        "username": "input[name='username']",
+        "password": "input[name='password']",
+        "login_button": "button[type='submit']",
+        "title": "input[name='title']",
+        "body": "textarea[name='content']",
+        "tags": "input[name='tags']",
+        "publish_button": "button:has-text('发布')"
+      }
+    },
+    "douyin": {
+      "username": "replace-me",
+      "password": "replace-me",
+      "auth_mode": "douyin-login",
+      "login_url": "https://example.com/login",
+      "publish_url": "https://example.com/publish",
+      "storage_state": "./sessions/douyin.json",
+      "selectors": {
+        "username": "input[name='username']",
+        "password": "input[name='password']",
+        "login_button": "button[type='submit']",
+        "title": "input[name='title']",
+        "body": "textarea[name='content']",
+        "tags": "input[name='tags']",
+        "publish_button": "button:has-text('发布')"
+      }
+    },
+    "tieba": {
+      "username": "replace-me",
+      "password": "replace-me",
+      "auth_mode": "password",
+      "login_url": "https://example.com/login",
+      "publish_url": "https://example.com/publish",
+      "storage_state": "./sessions/tieba.json",
+      "selectors": {
+        "username": "input[name='username']",
+        "password": "input[name='password']",
+        "login_button": "button[type='submit']",
+        "title": "input[name='title']",
+        "body": "textarea[name='content']",
+        "tags": "input[name='tags']",
+        "publish_button": "button:has-text('发布')"
+      }
+    },
+    "weibo": {
+      "username": "replace-me",
+      "password": "replace-me",
+      "auth_mode": "password",
+      "login_url": "https://example.com/login",
+      "publish_url": "https://example.com/publish",
+      "storage_state": "./sessions/weibo.json",
+      "selectors": {
+        "username": "input[name='username']",
+        "password": "input[name='password']",
+        "login_button": "button[type='submit']",
+        "title": "input[name='title']",
+        "body": "textarea[name='content']",
+        "tags": "input[name='tags']",
+        "publish_button": "button:has-text('发布')"
+      }
+    },
+    "xiaoyuzhou": {
+      "username": "replace-me",
+      "password": "replace-me",
+      "auth_mode": "password",
+      "login_url": "https://example.com/login",
+      "publish_url": "https://example.com/publish",
+      "storage_state": "./sessions/xiaoyuzhou.json",
+      "selectors": {
+        "username": "input[name='username']",
+        "password": "input[name='password']",
+        "login_button": "button[type='submit']",
+        "title": "input[name='title']",
+        "body": "textarea[name='content']",
+        "tags": "input[name='tags']",
+        "publish_button": "button:has-text('发布')"
+      }
+    },
+    "xiaoyunque": {
+      "auth_mode": "sms-or-douyin",
+      "login_url": "https://example.com/login",
+      "generate_url": "https://example.com/video-generator",
+      "storage_state": "./sessions/xiaoyunque.json",
+      "selectors": {
+        "prompt": "textarea[name='prompt']",
+        "style": "input[name='style']",
+        "generate_button": "button:has-text('生成')",
+        "download_button": "button:has-text('下载')"
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+# 账号密码和浏览器登录态只能保存在本机。
+accounts.json
+accounts.*.json
+!accounts.example.json
+sessions/
+*.storage-state.json
+.venv/
+
+# 草稿可能包含视频、截图和平台登录前的页面信息，不进入代码仓库。
+drafts/*
+!drafts/.gitkeep
