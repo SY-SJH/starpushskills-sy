@@ -1,6 +1,6 @@
 interface:
   display_name: "StarPush Social Promo"
   short_description: "Platform-matched promo copy with drafts and publishing"
-  default_prompt: "Use $starpushskills-sy to turn this product or direction into platform-matched promo content and save drafts or publish with the selected account."
+  default_prompt: "Use $starpushskills-sy to turn a StarPush dream-promotion direction into platform-matched content, save a local draft, or publish with the currently signed-in account."
 policy:
   allow_implicit_invocation: true

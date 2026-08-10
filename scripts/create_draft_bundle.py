@@ -37,6 +37,8 @@ def render_markdown(payload: dict[str, Any]) -> str:
     lines.append("")
     lines.append(f"- 主题: {payload.get('topic', '')}")
     lines.append(f"- 方向: {payload.get('direction', '')}")
+    if payload.get("product"):
+        lines.append(f"- 产品: {payload.get('product')}")
     lines.append(f"- 自动发布: {str(bool(payload.get('auto_publish'))).lower()}")
     lines.append("")
     for item in payload.get("items", []):
@@ -50,6 +52,9 @@ def render_markdown(payload: dict[str, Any]) -> str:
         script = item.get("script")
         if script:
             lines.append(f"- 脚本: {script}")
+        generation_prompt = item.get("generation_prompt")
+        if generation_prompt and generation_prompt != script:
+            lines.append(f"- 创作提示: {generation_prompt}")
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
 

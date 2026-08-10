@@ -30,6 +30,27 @@ PLATFORM_LABELS = {
     "xiaoyuzhou": "小宇宙",
 }
 
+DEFAULT_PRODUCT_PROFILE = {
+    "name": "StarPush / STAR DREAM",
+    "website": "https://starpush.show/",
+    "one_liner": "一个把醒来后的模糊片段记录下来、整理成私人梦境手记，并提供中性 AI 解读和平台认证真人解梦服务的梦境平台。",
+}
+
+
+def load_product_profile(root: Path) -> dict[str, object]:
+    """读取随 skill 发布的产品资料，避免每次创作都重新询问产品定位。"""
+
+    path = root / "references" / "product-profile.json"
+    if not path.exists():
+        return dict(DEFAULT_PRODUCT_PROFILE)
+    try:
+        profile = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"product profile is invalid: {path}") from exc
+    if not isinstance(profile, dict):
+        raise SystemExit(f"product profile must be an object: {path}")
+    return profile
+
 
 def run(cmd: list[str]) -> None:
     subprocess.run(cmd, check=True)
@@ -40,6 +61,7 @@ def main() -> None:
     parser.add_argument("--name", help="发布或生成视频时使用的同事账号名；只生成文字草稿时可省略")
     parser.add_argument("--topic", required=True)
     parser.add_argument("--direction", default="", help="可选创作方向；留空时按主题自主创作")
+    parser.add_argument("--product", default="", help="覆盖默认产品的一句话描述；通常不需要填写")
     parser.add_argument("--platforms", required=True, help="Comma-separated platform list")
     parser.add_argument("--auto-publish", action="store_true")
     parser.add_argument("--publish-at", help="按本地时间或 ISO 8601 时间排队，例如 2026-08-10T18:00:00+08:00")
@@ -48,6 +70,10 @@ def main() -> None:
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
+    product_profile = load_product_profile(root)
+    product = args.product.strip() or str(
+        product_profile.get("one_liner") or DEFAULT_PRODUCT_PROFILE["one_liner"]
+    )
     platforms = []
     for item in args.platforms.split(","):
         platform = canonical_platform(item)
@@ -66,6 +92,8 @@ def main() -> None:
             raise SystemExit("--publish-at 必须是 ISO 8601 时间，例如 2026-08-10T18:00:00+08:00") from exc
 
     payload = {
+        "product": product,
+        "product_profile": product_profile,
         "topic": args.topic,
         "direction": args.direction,
         "auto_publish": bool(args.auto_publish),
@@ -75,14 +103,21 @@ def main() -> None:
     for platform in platforms:
         label = PLATFORM_LABELS.get(platform, platform)
         direction = args.direction or "自主创作"
+        generation_prompt = (
+            f"产品：{product}\n"
+            f"主题：{args.topic}\n"
+            f"方向：{direction}\n"
+            f"请按{label}平台习惯创作，不虚构产品能力。"
+        )
         if platform == "douyin":
             payload["items"].append(
                 {
                     "platform": "douyin",
                     "title": f"{args.topic}｜短视频",
-                    "body": f"围绕 {direction} 的视频文案",
+                    "body": f"产品：{product}\n围绕 {direction} 的抖音短视频文案",
                     "tags": ["#抖音", "#视频"],
-                    "script": f"{args.topic}。{direction}",
+                    "script": generation_prompt,
+                    "generation_prompt": generation_prompt,
                 }
             )
         else:
@@ -90,8 +125,9 @@ def main() -> None:
                 {
                     "platform": platform,
                     "title": f"{args.topic}｜{label}",
-                    "body": f"围绕 {direction} 的{label}平台文案",
+                    "body": f"产品：{product}\n围绕 {direction} 的{label}平台文案",
                     "tags": [f"#{label}", "#推广"],
+                    "generation_prompt": generation_prompt,
                 }
             )
 
@@ -113,6 +149,8 @@ def main() -> None:
                 args.topic,
                 "--direction",
                 args.direction,
+                "--product",
+                product,
                 "--name",
                 args.name,
                 "--account-file",

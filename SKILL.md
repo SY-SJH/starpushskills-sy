@@ -11,23 +11,19 @@ description: Generate and publish StarPush promotion content for Zhihu, Xiaohong
 
 ## 使用流程
 
-1. 先识别用户给的是“自主推广”还是“定向创作”。
-2. 再识别目标平台和是否需要视频。
-3. 按平台生成内容，优先用最简输出：`标题`、`正文`、`标签/话题`。
-4. 如果是 `抖音`，先产出视频脚本，再调用小云雀生成视频素材。
-5. 生成结果先保存到本 skill 目录下的 `drafts/`。
-6. 第一次运行时，如果 `drafts/` 不存在，先自动创建。
-7. 发布前读取当前账号配置，避免混号。
-8. 需要实际落盘时，优先调用 `scripts/create_draft_bundle.py`。
-9. 需要读取账号时，优先调用 `scripts/load_account.py`。
-10. 需要直接登录平台后台发布时，优先调用 `scripts/publish_via_browser.py`。
-11. 如果平台要求短信验证码、二维码或抖音登录，先用 `scripts/bootstrap_browser_session.py` 完成一次人工登录，再复用本地会话。
-12. 如果需要让小云雀生成视频，优先调用 `scripts/generate_video_via_browser.py`。
-13. 如果用户只想要一条命令跑完整流程，优先调用 `scripts/run_campaign.py`。
+1. 读取 [references/product-profile.md](references/product-profile.md) 作为默认产品资料。用户说“推广我们平台”或“推广 StarPush”时直接使用它，不要再次追问产品是什么；用户明确推广其他产品时才要求一句话产品描述。
+2. 识别用户给的是“自主推广”还是“定向创作”。用户只给方向时，使用默认产品资料加这个方向创作。
+3. 识别目标平台和是否需要视频。按平台生成内容，文字平台优先输出 `标题`、`正文`、`标签/话题`；抖音优先输出视频脚本、口播/分镜、封面文案和话题。
+4. 需要视频时，先写抖音内容，再在用户明确要求生成视频后使用小云雀。视频生成完成后保存到本次草稿目录。
+5. 第一次运行时调用 `scripts/ensure_drafts_dir.py`，把文字、脚本、视频和清单都保存到 skill 目录下的 `drafts/`。
+6. 需要实际落盘时调用 `scripts/create_draft_bundle.py`；需要生成本地发布计划时调用 `scripts/build_publish_plan.py`。
+7. 需要发布或生成视频时，先按 [references/browser-session.md](references/browser-session.md) 检查当前已登录浏览器。已有可用浏览器时直接操作可见网页，以页面显示的账号为准，不要求 `accounts.json`。
+8. 没有可用已登录浏览器时，才使用 [references/account-config.md](references/account-config.md) 的本地账号后备模式，调用 `scripts/load_account.py`、`scripts/publish_via_browser.py` 或 `scripts/generate_video_via_browser.py`。首次短信、二维码或抖音登录调用 `scripts/bootstrap_browser_session.py`，由用户本人完成。
+9. 用户明确要定时发布时保存 `schedule.json`。如果使用当前浏览器会话，定时点需要由能重新连接该浏览器的模型任务执行；`scripts/publish_scheduled.py` 只适用于本地 `storage_state` 后备模式。
 
 ## 常用命令
 
-只生成文字草稿时不需要账号：
+只生成文字草稿时不需要账号；默认产品是 StarPush 梦境平台：
 
 ```bash
 .venv/bin/python scripts/run_campaign.py \
@@ -36,7 +32,7 @@ description: Generate and publish StarPush promotion content for Zhihu, Xiaohong
   --platforms "小红书,百度贴吧"
 ```
 
-抖音视频或自动发布需要先在 `accounts.json` 中选定 `--name`。短信、二维码或抖音授权平台首次使用时，先执行：
+没有可用已登录浏览器时，抖音视频或自动发布才需要先在 `accounts.json` 中选定 `--name`。短信、二维码或抖音授权平台首次使用时，先执行：
 
 ```bash
 .venv/bin/python scripts/bootstrap_browser_session.py \
@@ -46,6 +42,8 @@ description: Generate and publish StarPush promotion content for Zhihu, Xiaohong
 ```
 
 之后再用 `run_campaign.py --name zhangsan ... --platforms 抖音` 生成视频；发布时增加 `--auto-publish`。平台页面首次接入或页面改版前，先用 `publish_via_browser.py --dry-run` 检查填充结果。
+
+有可用已登录浏览器时，不要为了“证明登录”去读取浏览器 Cookie 或强制创建 `storage_state`。直接在浏览器中打开平台网页，确认页面账号后操作；具体步骤见 [references/browser-session.md](references/browser-session.md)。
 
 ## 平台规则
 
@@ -59,8 +57,8 @@ description: Generate and publish StarPush promotion content for Zhihu, Xiaohong
 ## 账号规则
 
 - 同一 skill 允许多人共用。
-- 每个同事使用自己的平台账号配置。
-- 发布时必须读取当前账号，不允许写死单账号。
+- 每个同事使用自己的浏览器账号；只有本地后备模式才维护自己的 `accounts.json` 和会话文件。
+- 发布时必须识别当前账号：可见浏览器模式以页面上的账号身份为准；本地后备模式才读取 `accounts.json`，不允许写死单账号。
 - 账号文件使用 `accounts.json`，支持旧的单账号格式和 `accounts` 多账号格式；该文件只保存在本机。
 - 密码、Cookie 和 token 不得写进草稿清单、截图说明或终端输出。
 
@@ -70,9 +68,9 @@ description: Generate and publish StarPush promotion content for Zhihu, Xiaohong
 - `scripts/load_account.py`：按同事名和平台读取账号配置。
 - `scripts/build_publish_plan.py`：把草稿和账号拼成发布计划。
 - `scripts/ensure_drafts_dir.py`：首次使用时创建 `drafts/`。
-- `scripts/publish_via_browser.py`：用账号密码打开平台后台并提交发布。
+- `scripts/publish_via_browser.py`：在本地 Playwright 后备模式打开平台后台、填充内容并提交发布。
 - `scripts/bootstrap_browser_session.py`：人工完成短信/抖音登录后保存会话。
-- `scripts/generate_video_via_browser.py`：调用小云雀生成视频并保存到草稿目录。
+- `scripts/generate_video_via_browser.py`：在本地 Playwright 后备模式调用小云雀生成视频并保存到草稿目录；不能接管当前 Chrome。
 - `scripts/run_campaign.py`：按平台批量生成、排队和发布。
 - `scripts/publish_scheduled.py`：执行已经到时间的本地发布队列。
 
@@ -80,12 +78,12 @@ description: Generate and publish StarPush promotion content for Zhihu, Xiaohong
 
 - 可以完成：内容生成、平台改写、草稿落盘、账号选择、发布包整理。
 - 暂不直接承诺：平台后台 API 直发，因为不同平台的授权和接口形式不一致。
-- 如果用户要求自动发布，优先用浏览器自动化登录后台并提交。
+- 如果用户要求自动发布，优先用当前已登录的可见浏览器操作后台并提交；没有可用浏览器时才用 Playwright 后备模式。
 - 如果登录页需要验证码、短信或抖音授权，必须人工完成一次登录，不尝试绕过。
-- 人工登录成功后只保存 Playwright `storage_state`，后续任务复用本地登录态，不重复填写短信或授权信息。
-- 登录态失效时停止当前任务，并提示重新执行人工登录命令；不得在未确认登录成功时发布。
+- 后备模式人工登录成功后只保存 Playwright `storage_state`，后续任务复用本地登录态，不重复填写短信或授权信息；可见浏览器模式不导出登录态。
+- 登录态失效时停止当前任务：可见浏览器模式让用户在当前页面重新登录，本地后备模式才提示重新执行人工登录命令；不得在未确认登录成功时发布。
 - 如果用户要求视频，先让小云雀生成，再把视频文件放进草稿包。
-- 如果用户指定发布时间，使用 `--publish-at` 写入 `schedule.json`，到时间后运行 `scripts/publish_scheduled.py --once` 对到期草稿发布；队列不会绕过人工登录。
+- 如果用户指定发布时间，使用 `schedule.json` 保存计划；可见浏览器模式由能在到点时连接浏览器的模型任务执行，本地后备模式可运行 `scripts/publish_scheduled.py --once`。两种模式都不能绕过人工登录。
 
 ## 输出要求
 

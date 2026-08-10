@@ -4,6 +4,8 @@
 
 通过平台后台页面直接登录、填写、发布，不依赖开放 API。
 
+有浏览器控制能力时，优先使用同事本人已经登录的可见浏览器页面。当前浏览器显示的账号就是本次发布账号，不需要把账号密码复制到聊天，也不要求创建 `storage_state`。账号密码和 Playwright 会话只是没有可用已登录浏览器时的本地后备方案，完整流程见 [browser-session.md](browser-session.md)。
+
 ## 配置要点
 
 浏览器脚本依赖 Python Playwright；运行环境没有该模块时先安装依赖并准备 Chromium：
@@ -55,10 +57,12 @@
 
 ## 首次登录
 
-短信、二维码和抖音授权不能由脚本代填。先执行：
+仅在没有可用已登录浏览器、并且要使用本地后备模式时，才执行：
 
 ```bash
 .venv/bin/python scripts/bootstrap_browser_session.py --platform xiaoyunque --name zhangsan
 ```
 
-在可见浏览器中完成登录后回到终端按回车。会话文件保存在账号配置的 `storage_state` 路径，之后生成和发布都会复用它。
+在可见浏览器中完成登录后回到终端按回车。会话文件保存在账号配置的 `storage_state` 路径，之后生成和发布都会复用它。短信、二维码和抖音授权不能由脚本代填，必须由账号本人操作。
+
+如果用户已经在 Chrome 或模型浏览器中登录，不能因为本地没有 `sessions/*.json` 就要求重新登录；应直接回到可见浏览器发布流程。Playwright 脚本无法自动读取另一个浏览器的登录态。

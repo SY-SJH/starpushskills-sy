@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""通过小云雀可见网页生成视频，并把视频挂回当前推广草稿。"""
+"""在独立 Playwright 后备浏览器中生成小云雀视频，并把视频挂回当前推广草稿。"""
 
 from __future__ import annotations
 
@@ -22,6 +22,22 @@ from account_utils import (
 
 def read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_product_profile(root: Path) -> dict[str, Any]:
+    """读取视频提示词使用的默认产品资料；文件缺失时保留可用的短兜底。"""
+
+    path = root / "references" / "product-profile.json"
+    if not path.exists():
+        return {
+            "name": "StarPush / STAR DREAM",
+            "website": "https://starpush.show/",
+            "one_liner": "私人梦境记录、整理与中性解读平台。",
+        }
+    payload = read_json(path)
+    if not isinstance(payload, dict):
+        raise SystemExit(f"product profile must be an object: {path}")
+    return payload
 
 
 def slugify(value: str) -> str:
@@ -56,7 +72,8 @@ def update_manifest(bundle_dir: Path, video_name: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--topic", required=True)
-    parser.add_argument("--direction", required=True)
+    parser.add_argument("--direction", default="")
+    parser.add_argument("--product", default="", help="覆盖默认产品的一句话描述")
     parser.add_argument("--name", required=True)
     parser.add_argument("--account-file", default="accounts.json")
     parser.add_argument("--bundle-dir", help="把视频直接保存到已有推广草稿目录")
@@ -65,6 +82,8 @@ def main() -> None:
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
+    product_profile = load_product_profile(root)
+    product = args.product.strip() or str(product_profile.get("one_liner", "私人梦境记录、整理与中性解读平台。"))
     drafts_root = root / "drafts"
     drafts_root.mkdir(parents=True, exist_ok=True)
     bundle_dir = Path(args.bundle_dir) if args.bundle_dir else None
@@ -80,18 +99,30 @@ def main() -> None:
     generate_url = account.get("generate_url")
     storage = session_path(root, account)
     selectors = account.get("selectors", {})
-    if not login_url or not generate_url or not storage:
-        raise SystemExit("xiaoyunque requires login_url, generate_url and storage_state")
-    if requires_manual_login(account) and not storage.exists():
+    if not login_url or not generate_url:
+        raise SystemExit("xiaoyunque requires login_url and generate_url")
+    if requires_manual_login(account) and (storage is None or not storage.exists()):
         raise SystemExit(
-            "小云雀尚未登录。请先在终端执行一次人工登录命令：\n"
+            "本地 Playwright 后备模式没有找到小云雀登录态。这不代表当前 Chrome 或模型浏览器未登录；"
+            "该脚本不能接管已有浏览器。请按 references/browser-session.md 使用已登录浏览器，"
+            "或先执行一次人工登录命令：\n"
             + login_hint(root, args.account_file, args.name, "xiaoyunque")
         )
 
-    prompt = f"{args.topic}。{args.direction}"
+    direction = args.direction or "自主创作"
+    prompt = (
+        f"请为产品创作一条适合抖音的短视频。产品：{product}。"
+        f"主题：{args.topic}。方向：{direction}。"
+        "只使用已确认的产品能力，避免医疗、心理诊断和确定性预言表述。"
+    )
     (bundle_dir / "request.json").write_text(
         json.dumps(
-            {"topic": args.topic, "direction": args.direction, "prompt": prompt},
+            {
+                "product": product,
+                "topic": args.topic,
+                "direction": args.direction,
+                "prompt": prompt,
+            },
             ensure_ascii=False,
             indent=2,
         ),
@@ -152,6 +183,7 @@ def main() -> None:
                 json.dumps(
                     {
                         "topic": args.topic,
+                        "product": product,
                         "direction": args.direction,
                         "status": "generated",
                         "platform": "xiaoyunque",

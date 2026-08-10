@@ -105,14 +105,15 @@
     },
     "xiaoyunque": {
       "auth_mode": "sms-or-douyin",
-      "login_url": "https://example.com/login",
-      "generate_url": "https://example.com/video-generator",
+      "login_url": "https://xyq.jianying.com/login",
+      "generate_url": "https://xyq.jianying.com/home",
       "storage_state": "./sessions/xiaoyunque.json",
       "selectors": {
-        "prompt": "textarea[name='prompt']",
-        "style": "input[name='style']",
-        "generate_button": "button:has-text('生成')",
-        "download_button": "button:has-text('下载')"
+        "login_indicator": "input[placeholder='请输入手机号']",
+        "auth_success": "textarea[placeholder*='描述你的想法'], [contenteditable='true']",
+        "prompt": "textarea[placeholder*='描述你的想法'], [contenteditable='true']",
+        "generate_button": "button:has-text('开始生成')",
+        "download_button": "button:has-text('下载'), a:has-text('下载')"
       }
     }
   }

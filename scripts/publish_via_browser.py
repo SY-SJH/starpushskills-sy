@@ -80,6 +80,13 @@ def main() -> None:
     storage = session_path(root, account)
     if not login_url or not publish_url:
         raise SystemExit(f"missing login_url or publish_url for {platform}")
+    if requires_manual_login(account) and (storage is None or not storage.exists()):
+        raise SystemExit(
+            f"{platform} 本地 Playwright 后备模式没有登录态。这不代表当前 Chrome 或模型浏览器未登录；"
+            "该脚本不能接管已有浏览器。请按 references/browser-session.md 使用已登录浏览器，"
+            "或先执行人工登录命令：\n"
+            + login_hint(root, args.account_file, args.name, platform)
+        )
 
     try:
         from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
