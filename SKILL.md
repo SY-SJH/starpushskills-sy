@@ -9,6 +9,12 @@ description: Generate and publish StarPush promotion content for Zhihu, Xiaohong
 
 把同一条推广需求，自动改写成适合不同平台的内容，并支持先落本地草稿、再手动发布或定时发布。
 
+## 固定入口
+
+- 小云雀登录与创作入口：`https://xyq.jianying.com/home`
+- 小云雀登录方式：手机号短信验证码或“通过抖音登录”。
+- 抖音需要视频时，登录并确认账号后，在小云雀“创作 Agent”中生成视频，再保存到本次草稿目录。
+
 ## 使用流程
 
 1. 读取 [references/product-profile.md](references/product-profile.md) 作为默认产品资料。用户说“推广我们平台”或“推广 StarPush”时直接使用它，不要再次追问产品是什么；用户明确推广其他产品时才要求一句话产品描述。
