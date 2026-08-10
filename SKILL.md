@@ -17,9 +17,10 @@ description: Generate and publish StarPush promotion content for Zhihu, Xiaohong
 4. 需要视频时，先写抖音内容，再在用户明确要求生成视频后使用小云雀。视频生成完成后保存到本次草稿目录。
 5. 第一次运行时调用 `scripts/ensure_drafts_dir.py`，把文字、脚本、视频和清单都保存到 skill 目录下的 `drafts/`。
 6. 需要实际落盘时调用 `scripts/create_draft_bundle.py`；需要生成本地发布计划时调用 `scripts/build_publish_plan.py`。
-7. 需要发布或生成视频时，先按 [references/browser-session.md](references/browser-session.md) 检查当前已登录浏览器。已有可用浏览器时直接操作可见网页，以页面显示的账号为准，不要求 `accounts.json`。
-8. 没有可用已登录浏览器时，才使用 [references/account-config.md](references/account-config.md) 的本地账号后备模式，调用 `scripts/load_account.py`、`scripts/publish_via_browser.py` 或 `scripts/generate_video_via_browser.py`。首次短信、二维码或抖音登录调用 `scripts/bootstrap_browser_session.py`，由用户本人完成。
-9. 用户明确要定时发布时保存 `schedule.json`。如果使用当前浏览器会话，定时点需要由能重新连接该浏览器的模型任务执行；`scripts/publish_scheduled.py` 只适用于本地 `storage_state` 后备模式。
+7. 需要发布或生成视频时，先按 [references/browser-session.md](references/browser-session.md) 检查浏览器连接和登录状态。必须先确认运行环境能看到目标网页，再根据页面状态决定下一步；不能根据用户过去说过“已经登录”就直接假定当前会话可用。
+8. 浏览器处于“已连接且已登录”状态时，直接操作可见网页，以页面显示的账号为准，不要求 `accounts.json`。浏览器处于“未连接”或“已连接但未登录”状态时，先停止生成/发布，提示用户连接自己的浏览器标签或在当前可见浏览器完成短信/抖音登录；不得把新建的空白沙箱浏览器当成用户自己的 Chrome。
+9. 只有用户明确选择独立命令行后备模式时，才使用 [references/account-config.md](references/account-config.md) 的本地账号后备模式，调用 `scripts/load_account.py`、`scripts/publish_via_browser.py` 或 `scripts/generate_video_via_browser.py`。首次短信、二维码或抖音登录调用 `scripts/bootstrap_browser_session.py`，由用户本人完成。
+10. 用户明确要定时发布时保存 `schedule.json`。如果使用当前浏览器会话，定时点需要由能重新连接该浏览器的模型任务执行；`scripts/publish_scheduled.py` 只适用于本地 `storage_state` 后备模式。
 
 ## 常用命令
 
@@ -32,7 +33,7 @@ description: Generate and publish StarPush promotion content for Zhihu, Xiaohong
   --platforms "小红书,百度贴吧"
 ```
 
-没有可用已登录浏览器时，抖音视频或自动发布才需要先在 `accounts.json` 中选定 `--name`。短信、二维码或抖音授权平台首次使用时，先执行：
+用户明确选择本地后备模式时，抖音视频或自动发布才需要先在 `accounts.json` 中选定 `--name`。短信、二维码或抖音授权平台首次使用时，先执行：
 
 ```bash
 .venv/bin/python scripts/bootstrap_browser_session.py \
@@ -43,7 +44,7 @@ description: Generate and publish StarPush promotion content for Zhihu, Xiaohong
 
 之后再用 `run_campaign.py --name zhangsan ... --platforms 抖音` 生成视频；发布时增加 `--auto-publish`。平台页面首次接入或页面改版前，先用 `publish_via_browser.py --dry-run` 检查填充结果。
 
-有可用已登录浏览器时，不要为了“证明登录”去读取浏览器 Cookie 或强制创建 `storage_state`。直接在浏览器中打开平台网页，确认页面账号后操作；具体步骤见 [references/browser-session.md](references/browser-session.md)。
+有可用已登录浏览器时，不要为了“证明登录”去读取浏览器 Cookie 或强制创建 `storage_state`。直接在已经连接的标签中打开平台网页，确认页面账号后操作；具体步骤见 [references/browser-session.md](references/browser-session.md)。
 
 ## 平台规则
 
@@ -78,7 +79,7 @@ description: Generate and publish StarPush promotion content for Zhihu, Xiaohong
 
 - 可以完成：内容生成、平台改写、草稿落盘、账号选择、发布包整理。
 - 暂不直接承诺：平台后台 API 直发，因为不同平台的授权和接口形式不一致。
-- 如果用户要求自动发布，优先用当前已登录的可见浏览器操作后台并提交；没有可用浏览器时才用 Playwright 后备模式。
+- 如果用户要求自动发布，只有在浏览器状态确认是“已连接且已登录”时才操作后台并提交；没有可用浏览器时先停下说明原因，用户明确选后备模式后才用 Playwright。
 - 如果登录页需要验证码、短信或抖音授权，必须人工完成一次登录，不尝试绕过。
 - 后备模式人工登录成功后只保存 Playwright `storage_state`，后续任务复用本地登录态，不重复填写短信或授权信息；可见浏览器模式不导出登录态。
 - 登录态失效时停止当前任务：可见浏览器模式让用户在当前页面重新登录，本地后备模式才提示重新执行人工登录命令；不得在未确认登录成功时发布。
