@@ -12,35 +12,53 @@
     "记录梦境",
     "真人解梦",
     "创建角色",
-    "活动页"
+    "活动页",
+    "梦脑测试",
+    "动态推荐",
+    "角色首页",
+    "角色资料",
+    "星屑漂流",
+    "星光盆栽"
   ],
   "assets": [
     {
       "id": "home-dream",
-      "file": "home-dream.png",
+      "file": "online-home-dream.png",
       "label": "梦境首页",
       "default": true,
-      "keywords": ["首页", "梦境首页", "梦境手记", "开始记录"]
+      "source": "online",
+      "keywords": ["首页", "梦境首页", "梦境手记", "开始记录", "梦境"]
     },
     {
       "id": "record-dream",
       "file": "record-dream.png",
       "label": "记录梦境",
       "default": true,
+      "source": "user-provided",
       "keywords": ["记录", "语音", "回忆", "整理", "梦境原文"]
     },
     {
       "id": "human-dream-guide",
-      "file": "human-dream-guide.png",
+      "file": "online-human-dream-guide.png",
       "label": "真人解梦",
+      "default": true,
+      "source": "online",
+      "keywords": ["真人解梦", "解梦师", "预约", "解梦卡", "解读"]
+    },
+    {
+      "id": "human-dream-guide-detail",
+      "file": "online-human-dream-guide-detail.png",
+      "label": "解梦师详情",
       "default": false,
-      "keywords": ["真人解梦", "解梦师", "预约", "解梦卡"]
+      "source": "online",
+      "keywords": ["解梦师详情", "解梦师介绍", "预约解梦", "解梦服务"]
     },
     {
       "id": "activities",
-      "file": "activities.png",
+      "file": "online-activities.png",
       "label": "活动页",
       "default": false,
+      "source": "online",
       "keywords": ["活动", "DBTI", "出道企划", "星屑漂流", "星光盆栽"]
     },
     {
@@ -48,7 +66,88 @@
       "file": "create-character.png",
       "label": "创建角色",
       "default": false,
+      "source": "user-provided",
       "keywords": ["创建角色", "虚拟人物", "角色设定", "世界观", "人设"]
+    },
+    {
+      "id": "login-register",
+      "file": "online-login-register.png",
+      "label": "登录注册弹窗",
+      "default": false,
+      "source": "online",
+      "keywords": ["登录", "注册", "登录注册", "登录弹窗"]
+    },
+    {
+      "id": "create-menu",
+      "file": "online-create-menu.png",
+      "label": "创建菜单",
+      "default": false,
+      "source": "online",
+      "keywords": ["记录梦境入口", "发布动态入口", "创建菜单", "记录入口", "发布入口"]
+    },
+    {
+      "id": "character-home",
+      "file": "online-character-home.png",
+      "label": "角色首页",
+      "default": false,
+      "source": "online",
+      "keywords": ["角色首页", "虚拟角色首页", "角色广场", "角色"]
+    },
+    {
+      "id": "character-profile",
+      "file": "online-character-profile.png",
+      "label": "角色资料页",
+      "default": false,
+      "source": "online",
+      "keywords": ["角色资料", "角色详情", "角色档案", "虚拟人物资料"]
+    },
+    {
+      "id": "feed",
+      "file": "online-feed.png",
+      "label": "动态推荐页",
+      "default": false,
+      "source": "online",
+      "keywords": ["动态", "动态推荐", "内容流", "社区", "分享"]
+    },
+    {
+      "id": "dream-brain-test",
+      "file": "online-dream-brain-test.png",
+      "label": "梦脑测试首页",
+      "default": false,
+      "source": "online",
+      "keywords": ["梦脑", "梦脑测试", "测试首页", "梦境测试", "性格测试"]
+    },
+    {
+      "id": "dream-brain-question",
+      "file": "online-dream-brain-question.png",
+      "label": "梦脑测试题目",
+      "default": false,
+      "source": "online",
+      "keywords": ["梦脑题目", "测试题目", "答题", "梦境问答"]
+    },
+    {
+      "id": "stardust",
+      "file": "online-stardust.png",
+      "label": "星屑漂流",
+      "default": false,
+      "source": "online",
+      "keywords": ["星屑漂流", "漂流瓶", "星屑", "梦境漂流"]
+    },
+    {
+      "id": "bonsai-login",
+      "file": "online-bonsai-login.png",
+      "label": "星光盆栽登录页",
+      "default": false,
+      "source": "online",
+      "keywords": ["星光盆栽", "盆栽", "登录保护", "成长"]
+    },
+    {
+      "id": "my-login",
+      "file": "online-my-login.png",
+      "label": "我的页面登录状态",
+      "default": false,
+      "source": "online",
+      "keywords": ["我的", "个人中心", "个人页", "账号"]
     }
   ]
 }
