@@ -5,7 +5,12 @@ accounts.*.json
 sessions/
 *.storage-state.json
 .venv/
+__pycache__/
+*.pyc
 
 # 草稿可能包含视频、截图和平台登录前的页面信息，不进入代码仓库。
 drafts/*
 !drafts/.gitkeep
+
+# 小云雀 Access Key 只保存在本机，不进入 GitHub。
+local/

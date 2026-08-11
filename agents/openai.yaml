@@ -1,6 +1,6 @@
 interface:
   display_name: "StarPush 推广助手"
   short_description: "按平台生成内容、保存草稿，并在登录后发布"
-  default_prompt: "Use $starpushskills-sy to generate StarPush promotion content for the requested platforms, save it as a draft, and publish it when requested."
+  default_prompt: "Use $starpushskills-sy to generate StarPush promotion content for the requested platforms, use the Xiaoyunque API for videos when configured, save drafts, and publish when requested."
 policy:
   allow_implicit_invocation: true

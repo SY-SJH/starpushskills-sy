@@ -1,6 +1,6 @@
 ---
 name: starpushskills-sy
-description: Generate, save, and publish StarPush promotion content for Zhihu, Xiaohongshu, Douyin, Baidu Tieba, Weibo, and Xiaoyuzhou. Use when the user asks to promote StarPush, create platform-specific copy, generate a Douyin video, or publish content.
+description: Generate, save, and publish StarPush promotion content for Zhihu, Xiaohongshu, Douyin, Baidu Tieba, Weibo, and Xiaoyuzhou. Use when the user asks to promote StarPush, create platform-specific copy, generate a Douyin video through the Xiaoyunque API, or publish content.
 ---
 
 # StarPush 推广助手
@@ -20,7 +20,7 @@ description: Generate, save, and publish StarPush promotion content for Zhihu, X
 1. 读取 [references/product-profile.md](references/product-profile.md)，默认产品是 StarPush / STAR DREAM，不重复询问产品资料。
 2. 按平台分别创作真实可发布的内容，并调用 `scripts/ensure_drafts_dir.py` 创建 `drafts/`，再把内容保存进去。
 3. 用户只要求“写内容”时，只生成并保存草稿，不打开发布页面。
-4. 用户要求“生成视频”时，打开小云雀 `https://xyq.jianying.com/home`，在当前可操作的浏览器中生成视频，并把视频放进本次草稿目录。
+4. 用户要求“生成视频”时，优先调用 `scripts/generate_video_via_api.py` 使用小云雀 API，自动提交、等待并下载视频；如果本机还没有 API Key，才使用小云雀网页浏览器流程。
 5. 用户要求“发布”时，打开目标平台，填写刚生成的内容并发布。只有用户明确说发布，才执行最终发布操作。
 6. 用户给出发布时间时，保存简单定时计划；到点只有浏览器仍可用并已登录时才发布，否则保留草稿并提示用户。
 
@@ -28,7 +28,7 @@ description: Generate, save, and publish StarPush promotion content for Zhihu, X
 
 每位同事直接在自己使用的浏览器里登录自己的平台账号，skill 以页面上显示的账号为准，不需要提供账号密码。
 
-如果打开的是登录页，只提示用户在当前页面完成手机号短信登录或抖音登录。用户说“登录好了”后，重新检查页面是否已经进入工作台和对应账号，再继续操作。不要让用户提供任何登录凭证。
+已经配置小云雀 API Key 时，生成视频不需要打开小云雀网页或再次登录。没有 API Key 时，才提示用户在小云雀页面完成手机号短信登录或抖音登录；用户说“登录好了”后，重新检查页面是否已经进入工作台和对应账号，再继续操作。不要让用户提供任何登录凭证。
 
 如果当前无法操作浏览器，就先把文字、视频脚本和发布内容保存到 `drafts/`，明确告诉用户内容已保存但还没有发布，不要声称已经登录或发布成功。
 
@@ -46,6 +46,8 @@ description: Generate, save, and publish StarPush promotion content for Zhihu, X
 ## 草稿
 
 第一次使用自动创建 `drafts/`。每次任务建立一个新的草稿目录，里面至少保存 `content.md`；视频任务还保存生成的视频文件和提示词。用户可以手动把自己的图片或视频放进这个目录，再要求继续发布。
+
+小云雀 API 的设置和本地 Key 存放方式见 [references/xiaoyunque-api.md](references/xiaoyunque-api.md)。
 
 ## 内容边界
 

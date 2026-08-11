@@ -19,6 +19,7 @@ from datetime import datetime
 from pathlib import Path
 
 from account_utils import canonical_platform
+from xiaoyunque_api import load_access_key
 
 
 PLATFORM_LABELS = {
@@ -58,7 +59,10 @@ def run(cmd: list[str]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--name", help="发布或生成视频时使用的同事账号名；只生成文字草稿时可省略")
+    parser.add_argument(
+        "--name",
+        help="发布时使用的同事账号名；未配置小云雀 API Key 时也用于网页登录生成视频",
+    )
     parser.add_argument("--topic", required=True)
     parser.add_argument("--direction", default="", help="可选创作方向；留空时按主题自主创作")
     parser.add_argument("--product", default="", help="覆盖默认产品的一句话描述；通常不需要填写")
@@ -70,6 +74,7 @@ def main() -> None:
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
+    api_key = load_access_key(root, required=False)
     product_profile = load_product_profile(root)
     product = args.product.strip() or str(
         product_profile.get("one_liner") or DEFAULT_PRODUCT_PROFILE["one_liner"]
@@ -81,8 +86,12 @@ def main() -> None:
             platforms.append(platform)
     if not platforms:
         raise SystemExit("platforms cannot be empty")
-    if ("douyin" in platforms or args.auto_publish or args.publish_at) and not args.name:
-        raise SystemExit("抖音视频或自动发布需要 --name，以便读取对应同事的账号")
+    if "douyin" in platforms and not args.name and not api_key:
+        raise SystemExit(
+            "抖音视频需要小云雀 API Key，或使用 --name 走网页登录流程。"
+        )
+    if (args.auto_publish or args.publish_at) and not args.name:
+        raise SystemExit("发布或定时发布需要 --name，以便识别发布账号")
     if args.auto_publish and args.publish_at:
         raise SystemExit("--auto-publish 和 --publish-at 不能同时使用")
     if args.publish_at:
@@ -141,24 +150,24 @@ def main() -> None:
     ).strip()
 
     if "douyin" in platforms:
+        video_script = (
+            "generate_video_via_api.py" if api_key else "generate_video_via_browser.py"
+        )
         run(
             [
                 sys.executable,
-                str(root / "scripts" / "generate_video_via_browser.py"),
+                str(root / "scripts" / video_script),
                 "--topic",
                 args.topic,
                 "--direction",
                 args.direction,
                 "--product",
                 product,
-                "--name",
-                args.name,
-                "--account-file",
-                args.account_file,
                 "--bundle-dir",
                 bundle_dir,
             ]
-            + (["--headful"] if args.headful else [])
+            + ([] if api_key else ["--name", args.name, "--account-file", args.account_file])
+            + (["--headful"] if args.headful and not api_key else [])
         )
 
     if args.name:
