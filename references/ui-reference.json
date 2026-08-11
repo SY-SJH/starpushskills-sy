@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "max_automatic_references": 3,
+  "product_demo_keywords": [
+    "平台介绍",
+    "功能介绍",
+    "产品演示",
+    "界面",
+    "页面",
+    "官网",
+    "使用流程",
+    "记录梦境",
+    "真人解梦",
+    "创建角色",
+    "活动页"
+  ],
+  "assets": [
+    {
+      "id": "home-dream",
+      "file": "home-dream.png",
+      "label": "梦境首页",
+      "default": true,
+      "keywords": ["首页", "梦境首页", "梦境手记", "开始记录"]
+    },
+    {
+      "id": "record-dream",
+      "file": "record-dream.png",
+      "label": "记录梦境",
+      "default": true,
+      "keywords": ["记录", "语音", "回忆", "整理", "梦境原文"]
+    },
+    {
+      "id": "human-dream-guide",
+      "file": "human-dream-guide.png",
+      "label": "真人解梦",
+      "default": false,
+      "keywords": ["真人解梦", "解梦师", "预约", "解梦卡"]
+    },
+    {
+      "id": "activities",
+      "file": "activities.png",
+      "label": "活动页",
+      "default": false,
+      "keywords": ["活动", "DBTI", "出道企划", "星屑漂流", "星光盆栽"]
+    },
+    {
+      "id": "create-character",
+      "file": "create-character.png",
+      "label": "创建角色",
+      "default": false,
+      "keywords": ["创建角色", "虚拟人物", "角色设定", "世界观", "人设"]
+    }
+  ]
+}

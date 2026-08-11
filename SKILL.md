@@ -51,7 +51,7 @@ description: Generate, save, and publish StarPush promotion content for Zhihu, X
 
 视频内容和画面真实性规则见 [references/video-content.md](references/video-content.md)。没有真实官网界面参考素材时，禁止让视频出现软件界面；优先使用虚拟人物、动画或梦境场景。
 
-已确认的线上界面截图清单见 [references/ui-reference.md](references/ui-reference.md)。只有素材被实际附加到生成任务时，才允许在视频中展示界面。
+已确认的线上界面截图清单见 [references/ui-reference.md](references/ui-reference.md)。使用 API 生成平台演示视频时，脚本会自动上传匹配截图并把返回的素材 ID 附加到生成任务；只有上传成功后，才允许在视频中展示界面。
 
 ## 内容边界
 

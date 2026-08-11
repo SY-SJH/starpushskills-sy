@@ -20,7 +20,9 @@ from xiaoyunque_api import (
     ensure_success,
     load_access_key,
     request_json,
+    upload_file,
 )
+from ui_reference import select_ui_references
 from video_prompt import build_video_prompt
 
 
@@ -103,6 +105,12 @@ def main() -> None:
         help="视频内容：自动判断、平台演示、梦境故事或虚拟人物",
     )
     parser.add_argument("--virtual-character", default="", help="可选的虚拟人物设定")
+    parser.add_argument(
+        "--ui-reference",
+        action="append",
+        default=[],
+        help="显式指定真实界面素材 ID，可重复使用；未指定时平台演示模式会自动选择",
+    )
     parser.add_argument("--bundle-dir")
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
     parser.add_argument("--ratio", type=int, default=3, help="画幅：3=9:16")
@@ -123,6 +131,28 @@ def main() -> None:
     )
     direction = args.direction.strip() or "自主创作"
     bundle_dir = create_bundle(root, args.topic, args.bundle_dir)
+    try:
+        ui_references = select_ui_references(
+            root,
+            mode=args.content_mode,
+            topic=args.topic,
+            direction=direction,
+            requested_ids=args.ui_reference,
+        )
+    except ValueError as exc:
+        raise XiaoyunqueApiError(str(exc)) from exc
+
+    asset_ids: list[str] = []
+    for reference in ui_references:
+        uploaded = upload_file(reference["path"], access_key, base_url=args.base_url)
+        uploaded_data = ensure_success(uploaded, f"界面素材上传（{reference['label']}）")
+        asset_id = str(uploaded_data.get("pippit_asset_id") or "")
+        if not asset_id:
+            raise XiaoyunqueApiError(
+                f"小云雀界面素材上传响应缺少 pippit_asset_id：{reference['label']}"
+            )
+        asset_ids.append(asset_id)
+
     prompt = build_video_prompt(
         topic=args.topic,
         direction=direction,
@@ -130,6 +160,7 @@ def main() -> None:
         website=str(product_profile.get("website") or "https://starpush.show/"),
         mode=args.content_mode,
         virtual_character=args.virtual_character,
+        ui_references=[str(item["label"]) for item in ui_references],
     )
     settings: dict[str, Any] = {
         "ratio": args.ratio,
@@ -140,9 +171,18 @@ def main() -> None:
     }
     if args.video_model.strip():
         settings["video_model"] = args.video_model.strip()
-    request_payload = {"message": prompt, "general_agent_settings": settings}
+    request_payload: dict[str, Any] = {
+        "message": prompt,
+        "general_agent_settings": settings,
+    }
+    if asset_ids:
+        request_payload["asset_ids"] = asset_ids
+    request_record = {
+        **request_payload,
+        "reference_files": [str(item["path"].relative_to(root)) for item in ui_references],
+    }
     (bundle_dir / "request.json").write_text(
-        json.dumps(request_payload, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(request_record, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
     submitted = request_json(
@@ -186,6 +226,7 @@ def main() -> None:
                         "platform": "xiaoyunque-api",
                         "content_mode": args.content_mode,
                         "virtual_character": args.virtual_character,
+                        "ui_references": [str(item["label"]) for item in ui_references],
                         "run_id": run_id,
                         "thread_id": thread_id,
                         "media_path": video_name,

@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 
 VIDEO_MODES = {
     "auto": "自动判断",
@@ -30,6 +32,7 @@ def build_video_prompt(
     website: str,
     mode: str = "auto",
     virtual_character: str = "",
+    ui_references: Sequence[str] = (),
 ) -> str:
     """生成 API 和网页流程共用的中文视频创作提示词。"""
 
@@ -60,6 +63,18 @@ def build_video_prompt(
         if virtual_character.strip()
         else "优先使用原创虚拟人物、动画或插画角色，不要使用仿真人、真人演员或现实人物肖像。"
     )
+    reference_labels = [item.strip() for item in ui_references if item.strip()]
+    if reference_labels:
+        interface_instruction = (
+            f"本次已实际附加 StarPush 真实界面截图：{'、'.join(reference_labels)}。"
+            "如需出现产品界面，只能直接使用这些截图作为原始画面素材，通过平移、缩放、裁切或转场展示；"
+            "必须保留截图中的文字、按钮、颜色和布局，不得重新绘制、改写、补全或虚构任何界面。"
+        )
+    else:
+        interface_instruction = (
+            "当前请求没有附带官网界面参考素材，因此本次不要出现软件界面、浏览器窗口、"
+            "手机 App 假界面或虚构功能入口。"
+        )
 
     return (
         "请制作一条适合抖音发布的竖屏营销短视频。\n"
@@ -70,10 +85,8 @@ def build_video_prompt(
         f"内容模式：{VIDEO_MODES[normalized_mode]}\n"
         f"内容要求：{content_instruction}\n"
         f"人物要求：{character_instruction}\n"
-        "界面真实性是最高优先级：只有在任务提供 starpush.show 的真实截图或录屏参考时，"
-        "才允许出现软件界面；出现时只能严格还原参考素材中的页面、按钮、文字和布局，"
-        "不得自行设计、重绘、猜测或虚构任何界面。当前请求没有附带官网界面参考素材，"
-        "因此本次不要出现软件界面、浏览器窗口、手机 App 假界面或虚构功能入口。\n"
+        "界面真实性是最高优先级：只有任务实际附加 starpush.show 的真实截图或录屏时才允许出现软件界面。"
+        f"{interface_instruction}\n"
         "只使用已确认的产品能力，不虚构价格、活动、用户数量、效果数据或未确认功能。"
         "不要使用医疗诊断、心理治疗、科学预测或确定性预言表述；梦境解读只能作为中性自我观察和娱乐参考。"
     )

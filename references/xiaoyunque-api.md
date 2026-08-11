@@ -28,6 +28,14 @@
 - `dream-story`：围绕具体梦境或梦境现象创作。
 - `virtual-character`：使用虚拟人物演绎梦境或产品场景。
 
-所有模式都遵守 [video-content.md](video-content.md) 的界面真实性规则。当前 API 请求只提交文字提示词，没有实现本地图片上传；因此没有提供经过确认的官网截图或录屏时，提示词会明确禁止生成软件界面，避免模型自行编造页面。
+所有模式都遵守 [video-content.md](video-content.md) 的界面真实性规则。平台演示模式会自动：
+
+1. 从 [ui-reference.json](ui-reference.json) 选择与主题匹配的真实页面截图。
+2. 逐张调用 `POST /api/biz/v1/skill/upload_file` 上传文件。
+3. 读取响应中的 `data.pippit_asset_id`。
+4. 将素材 ID 列表作为 `asset_ids` 传入营销视频任务。
+5. 在提示词中要求直接使用截图做平移、缩放、裁切或转场，不得重新绘制界面。
+
+梦境故事和虚拟人物模式默认不上传产品截图；用户明确指定 `--ui-reference` 时除外。素材上传失败时停止任务，不会退回假界面生成。
 
 API 只负责生成和下载视频；发布到抖音仍然需要当前已登录的发布页面，并且只有用户明确要求发布时才提交。

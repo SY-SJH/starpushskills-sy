@@ -7,9 +7,11 @@ Access Key 只从环境变量或 Git 忽略的本地文件读取，避免进入�
 from __future__ import annotations
 
 import json
+import mimetypes
 import os
 import urllib.error
 import urllib.request
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -88,6 +90,60 @@ def request_json(
         raise XiaoyunqueApiError("小云雀 API 返回了无法解析的响应。") from exc
     if not isinstance(result, dict):
         raise XiaoyunqueApiError("小云雀 API 返回格式错误。")
+    return result
+
+
+def upload_file(
+    path: Path,
+    access_key: str,
+    *,
+    base_url: str = DEFAULT_BASE_URL,
+    timeout_seconds: int = 120,
+) -> dict[str, Any]:
+    """按官方 multipart/form-data 接口上传单个素材文件。"""
+
+    if not path.is_file():
+        raise XiaoyunqueApiError(f"待上传素材不存在：{path}")
+    try:
+        file_data = path.read_bytes()
+    except OSError as exc:
+        raise XiaoyunqueApiError(f"无法读取待上传素材：{path.name}") from exc
+
+    boundary = f"----starpush-{uuid.uuid4().hex}"
+    file_name = path.name.replace('"', "_")
+    content_type = mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+    prefix = (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="file"; filename="{file_name}"\r\n'
+        f"Content-Type: {content_type}\r\n\r\n"
+    ).encode("utf-8")
+    body = prefix + file_data + f"\r\n--{boundary}--\r\n".encode("ascii")
+    request = urllib.request.Request(
+        api_url("/api/biz/v1/skill/upload_file", base_url),
+        data=body,
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {access_key}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+            "Accept": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            raw = response.read()
+    except urllib.error.HTTPError as exc:
+        raise XiaoyunqueApiError(
+            f"小云雀素材上传失败（HTTP {exc.code}），请检查 Access Key、文件格式和账号额度。"
+        ) from exc
+    except urllib.error.URLError as exc:
+        raise XiaoyunqueApiError(f"小云雀素材上传网络请求失败：{exc.reason}") from exc
+
+    try:
+        result = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise XiaoyunqueApiError("小云雀素材上传返回了无法解析的响应。") from exc
+    if not isinstance(result, dict):
+        raise XiaoyunqueApiError("小云雀素材上传返回格式错误。")
     return result
 
 

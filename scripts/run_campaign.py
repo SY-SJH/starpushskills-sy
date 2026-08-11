@@ -73,6 +73,12 @@ def main() -> None:
         help="抖音视频内容：自动判断、平台演示、梦境故事或虚拟人物",
     )
     parser.add_argument("--virtual-character", default="", help="可选的虚拟人物设定")
+    parser.add_argument(
+        "--ui-reference",
+        action="append",
+        default=[],
+        help="显式指定抖音视频使用的真实界面素材 ID，可重复使用",
+    )
     parser.add_argument("--platforms", required=True, help="Comma-separated platform list")
     parser.add_argument("--auto-publish", action="store_true")
     parser.add_argument("--publish-at", help="按本地时间或 ISO 8601 时间排队，例如 2026-08-10T18:00:00+08:00")
@@ -178,6 +184,11 @@ def main() -> None:
                 bundle_dir,
             ]
             + ([] if api_key else ["--name", args.name, "--account-file", args.account_file])
+            + (
+                [value for item in args.ui_reference for value in ("--ui-reference", item)]
+                if api_key
+                else []
+            )
             + (["--headful"] if args.headful and not api_key else [])
         )
 
