@@ -21,6 +21,7 @@ from xiaoyunque_api import (
     load_access_key,
     request_json,
 )
+from video_prompt import build_video_prompt
 
 
 def load_product_profile(root: Path) -> dict[str, Any]:
@@ -95,6 +96,13 @@ def main() -> None:
     parser.add_argument("--topic", required=True)
     parser.add_argument("--direction", default="")
     parser.add_argument("--product", default="")
+    parser.add_argument(
+        "--content-mode",
+        choices=("auto", "product-demo", "dream-story", "virtual-character"),
+        default="auto",
+        help="视频内容：自动判断、平台演示、梦境故事或虚拟人物",
+    )
+    parser.add_argument("--virtual-character", default="", help="可选的虚拟人物设定")
     parser.add_argument("--bundle-dir")
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
     parser.add_argument("--ratio", type=int, default=3, help="画幅：3=9:16")
@@ -115,12 +123,13 @@ def main() -> None:
     )
     direction = args.direction.strip() or "自主创作"
     bundle_dir = create_bundle(root, args.topic, args.bundle_dir)
-    prompt = (
-        "请制作一条适合抖音发布的竖屏营销短视频。"
-        f"产品：StarPush / STAR DREAM，官网：https://starpush.show/。"
-        f"产品定位：{product}主题：{args.topic}。创作方向：{direction}。"
-        "画面要有梦境氛围但保持清晰易懂，突出真实使用场景和行动引导。"
-        "不要虚构价格、活动、用户数量或未确认功能；不要使用医疗诊断、治疗、科学预测或确定性预言表述。"
+    prompt = build_video_prompt(
+        topic=args.topic,
+        direction=direction,
+        product=product,
+        website=str(product_profile.get("website") or "https://starpush.show/"),
+        mode=args.content_mode,
+        virtual_character=args.virtual_character,
     )
     settings: dict[str, Any] = {
         "ratio": args.ratio,
@@ -175,6 +184,8 @@ def main() -> None:
                     {
                         "status": "generated",
                         "platform": "xiaoyunque-api",
+                        "content_mode": args.content_mode,
+                        "virtual_character": args.virtual_character,
                         "run_id": run_id,
                         "thread_id": thread_id,
                         "media_path": video_name,

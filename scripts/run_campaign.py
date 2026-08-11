@@ -66,6 +66,13 @@ def main() -> None:
     parser.add_argument("--topic", required=True)
     parser.add_argument("--direction", default="", help="可选创作方向；留空时按主题自主创作")
     parser.add_argument("--product", default="", help="覆盖默认产品的一句话描述；通常不需要填写")
+    parser.add_argument(
+        "--content-mode",
+        choices=("auto", "product-demo", "dream-story", "virtual-character"),
+        default="auto",
+        help="抖音视频内容：自动判断、平台演示、梦境故事或虚拟人物",
+    )
+    parser.add_argument("--virtual-character", default="", help="可选的虚拟人物设定")
     parser.add_argument("--platforms", required=True, help="Comma-separated platform list")
     parser.add_argument("--auto-publish", action="store_true")
     parser.add_argument("--publish-at", help="按本地时间或 ISO 8601 时间排队，例如 2026-08-10T18:00:00+08:00")
@@ -163,6 +170,10 @@ def main() -> None:
                 args.direction,
                 "--product",
                 product,
+                "--content-mode",
+                args.content_mode,
+                "--virtual-character",
+                args.virtual_character,
                 "--bundle-dir",
                 bundle_dir,
             ]

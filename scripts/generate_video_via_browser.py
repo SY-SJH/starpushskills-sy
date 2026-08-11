@@ -18,6 +18,7 @@ from account_utils import (
     requires_manual_login,
     session_path,
 )
+from video_prompt import build_video_prompt
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -74,6 +75,13 @@ def main() -> None:
     parser.add_argument("--topic", required=True)
     parser.add_argument("--direction", default="")
     parser.add_argument("--product", default="", help="覆盖默认产品的一句话描述")
+    parser.add_argument(
+        "--content-mode",
+        choices=("auto", "product-demo", "dream-story", "virtual-character"),
+        default="auto",
+        help="视频内容：自动判断、平台演示、梦境故事或虚拟人物",
+    )
+    parser.add_argument("--virtual-character", default="", help="可选的虚拟人物设定")
     parser.add_argument("--name", required=True)
     parser.add_argument("--account-file", default="accounts.json")
     parser.add_argument("--bundle-dir", help="把视频直接保存到已有推广草稿目录")
@@ -110,10 +118,13 @@ def main() -> None:
         )
 
     direction = args.direction or "自主创作"
-    prompt = (
-        f"请为产品创作一条适合抖音的短视频。产品：{product}。"
-        f"主题：{args.topic}。方向：{direction}。"
-        "只使用已确认的产品能力，避免医疗、心理诊断和确定性预言表述。"
+    prompt = build_video_prompt(
+        topic=args.topic,
+        direction=direction,
+        product=product,
+        website=str(product_profile.get("website") or "https://starpush.show/"),
+        mode=args.content_mode,
+        virtual_character=args.virtual_character,
     )
     (bundle_dir / "request.json").write_text(
         json.dumps(
@@ -121,6 +132,8 @@ def main() -> None:
                 "product": product,
                 "topic": args.topic,
                 "direction": args.direction,
+                "content_mode": args.content_mode,
+                "virtual_character": args.virtual_character,
                 "prompt": prompt,
             },
             ensure_ascii=False,
@@ -187,6 +200,8 @@ def main() -> None:
                         "direction": args.direction,
                         "status": "generated",
                         "platform": "xiaoyunque",
+                        "content_mode": args.content_mode,
+                        "virtual_character": args.virtual_character,
                         "media_path": video_name,
                     },
                     ensure_ascii=False,
